@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define CURSOR_BIGGER_THAN_SIZE -1;
-#define SUCCESS 0;
-#define FALSE 0;
-#define TRUE 1;
+#define CURSOR_BIGGER_THAN_SIZE -1
+#define SUCCESS 0
+#define FALSE 0
+#define TRUE 1
 
 double avg(int *arr, size_t arr_size)
 {
@@ -14,7 +14,7 @@ double avg(int *arr, size_t arr_size)
         total += arr[i];
     }
 
-    return total / arr_size;
+    return (double)total / arr_size;
 }
 
 signed int append(int *arr, size_t *cur, size_t size, int num) // -> make struct for arrays
@@ -26,7 +26,7 @@ signed int append(int *arr, size_t *cur, size_t size, int num) // -> make struct
     return SUCCESS;
 }
 
-void *part(int *arr, size_t arr_size)
+void *part(int *arr, size_t arr_size, int *buf, size_t buf_size)
 {
     double average = avg(arr, arr_size);
 
@@ -55,18 +55,39 @@ void *part(int *arr, size_t arr_size)
             append(loweq, &loweq_cursor, loweq_size, arr[i]);
         }
     }
+
+    size_t buf_cursor = 0;
+    for (int i = 0; i < loweq_size; i++) {
+        append(sorted, &sorted_cursor, sorted_size, loweq[i]);
+    }
+
+    if (higher_size > 0) {
+        int *new_arr = part(higher, higher_size);
+        size_t new_arr_size = 0;
+
+        for (int i = 0; i < sizeof(*new_arr) / sizeof(new_arr[0]); i++) {
+            new_arr_size++;
+        }
+
+        for (int i = 0; i < new_arr_size; i++) {
+            append(buf, &sorted_cursor, buf_size, new_arr[i]);
+        }
+    }
+
+
+    free(higher);
+    free(loweq);
 }
 
 int main(void)
 {
     size_t numbers_size = 6;
     int numbers[6] = { 3, 1, 12, 95, 120, 4 };
+    int *arr = malloc(6);
 
-    part(numbers, numbers_size);
+    part(numbers, numbers_size, arr);
 
-    // int numbers_sorted[numbers_size];
-
-    // for (int i = 0; i < numbers_size; i++) {
-    //     printf("%i. %d\n", i+1, numbers_sorted[i]);
-    // }
+    for (int i = 0; i < numbers_size; i++) {
+        printf("%d\n", arr[i]);
+    }
 }
