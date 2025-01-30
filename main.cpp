@@ -29,27 +29,6 @@ class DynamicArray {
             free(this->array);
         }
 
-        void IncreaseCapacity(double extraCapacity)
-        {
-            if (extraCapacity <= 1.0) {
-                extraCapacity = 2;
-            }
-
-            unsigned int newCapacity = static_cast<unsigned int>(std::round(this->capacity * extraCapacity));
-            printf("Old Capacity: %d | New capacity: %d\n", this->GetCapacity(),newCapacity);
-            T* newArray = static_cast<T*>(realloc(this->array, newCapacity * sizeof(T)));
-
-            if (!newArray) {
-                throw std::bad_alloc();
-            }
-
-            printf("Not segfaulted yet\n");
-
-            this->capacity = newCapacity;
-            this->array = newArray;
-            printf("Succesfully reallocated & initialised new memory\n");
-        }
-
         unsigned int GetSize()
         {
             return this->size;
@@ -80,7 +59,6 @@ class DynamicArray {
                 this->size = index + 1;
             }
         }
-
 };
 
 int main(void) {
