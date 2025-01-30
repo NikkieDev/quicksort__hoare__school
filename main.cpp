@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <iostream>
+#include <stdexcept>
+#include <cmath>
 
 template <typename T>
 class DynamicArray {
@@ -13,7 +15,7 @@ class DynamicArray {
         {
 
             if (initialSize > capacity) {
-                throw "Size out of capacity bounds";
+                throw std::out_of_range("Initial size exceeds array capacity");
             }
 
             this->size = initialSize;
@@ -27,9 +29,25 @@ class DynamicArray {
             free(this->array);
         }
 
-        void IncreaseCapacity(unsigned int extraCapacity)
+        void IncreaseCapacity(double extraCapacity)
         {
-            this->capacity += extraCapacity;
+            if (extraCapacity <= 1.0) {
+                extraCapacity = 2;
+            }
+
+            unsigned int newCapacity = static_cast<unsigned int>(std::round(this->capacity * extraCapacity));
+            printf("Old Capacity: %d | New capacity: %d\n", this->GetCapacity(),newCapacity);
+            T* newArray = static_cast<T*>(realloc(this->array, newCapacity * sizeof(T)));
+
+            if (!newArray) {
+                throw std::bad_alloc();
+            }
+
+            printf("Not segfaulted yet\n");
+
+            this->capacity = newCapacity;
+            this->array = newArray;
+            printf("Succesfully reallocated & initialised new memory\n");
         }
 
         unsigned int GetSize()
@@ -37,22 +55,30 @@ class DynamicArray {
             return this->size;
         }
 
+        unsigned int GetCapacity()
+        {
+            return this->capacity;
+        }
+
         T GetItem(size_t index)
         {
-            if (static_cast<int>(index) >= this->size) {
+            if (index >= this->GetSize()) {
                 throw std::out_of_range("Index exceeds array size");
             }
 
-            return static_cast<T>(this->array[index]);
+            return this->array[index];
         }
 
         void SetItem(size_t index, T val)
         {
-            if (static_cast<int>(index) >= this->size) {
+            if (index >= this->GetCapacity()) {
                 throw std::out_of_range("Index exceeds array capacity");
             }
 
             this->array[index] = val;
+            if (index >= this->GetSize()) {
+                this->size = index + 1;
+            }
         }
 
 };
@@ -61,7 +87,15 @@ int main(void) {
     DynamicArray<int> arr(2,5);
     arr.SetItem(0, 15);
 
-    int firstItemInArray = static_cast<int>(arr.GetItem(0));
+    int firstItemInArray = int(arr.GetItem(0));
+
+    for (int i = 0; i < arr.GetCapacity(); i++) {
+        arr.SetItem(static_cast<size_t>(i), i+1);
+    }
 
     printf("%d\n", firstItemInArray);
+
+    for (int i = 0; i < arr.GetSize(); i++) {
+        printf("%d\n", arr.GetItem(static_cast<size_t>(i)));
+    }
 }
